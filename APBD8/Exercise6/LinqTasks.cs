@@ -202,7 +202,11 @@ namespace Exercise6
         /// </summary>
         public static IEnumerable<object> Task5()
         {
-            IEnumerable<object> result = null;
+            IEnumerable<object> result = Emps.Select(e => new
+            {
+                Nazwisko = e.Ename,
+                Praca = e.Job
+            });
             return result;
         }
 
@@ -213,7 +217,12 @@ namespace Exercise6
         /// </summary>
         public static IEnumerable<object> Task6()
         {
-            IEnumerable<object> result = null;
+            IEnumerable<object> result = Emps.Join(Depts, e => e.Deptno, d => d.Deptno, (e, d) => new
+            {
+                e.Ename,
+                e.Job,
+                d.Dname
+            });
             return result;
         }
 
@@ -222,7 +231,11 @@ namespace Exercise6
         /// </summary>
         public static IEnumerable<object> Task7()
         {
-            IEnumerable<object> result = null;
+            IEnumerable<object> result = Emps.GroupBy(e => e.Job).Select(e => new
+            {
+                Praca = e.Key,
+                LiczbaPracownikow = e.Count()
+            });
             return result;
         }
 
@@ -232,7 +245,7 @@ namespace Exercise6
         /// </summary>
         public static bool Task8()
         {
-            bool result = false;
+            bool result = Emps.Any(e => e.Job.Equals("Backend programmer"));
             return result;
         }
 
@@ -242,7 +255,8 @@ namespace Exercise6
         /// </summary>
         public static Emp Task9()
         {
-            Emp result = null;
+            Emp result = Emps.Where(e => e.Job.Equals("Frontend programmer")).OrderByDescending(e => e.HireDate)
+                .FirstOrDefault();
             return result;
         }
 
@@ -253,7 +267,20 @@ namespace Exercise6
         /// </summary>
         public static IEnumerable<object> Task10()
         {
-            IEnumerable<object> result = null;
+            IEnumerable<object> result = Emps.Select(e => new
+            {
+                e.Ename,
+                Job = (string?)e.Job,
+                HireDate = e.HireDate
+            }).Union(new []
+            {
+                new
+                {
+                    Ename = "Brak wartości",
+                    Job = (string?)null,
+                    HireDate = (DateTime?)null
+                }
+            });
             return result;
         }
 
@@ -265,14 +292,24 @@ namespace Exercise6
         ///      {name: "RESEARCH", numOfEmployees: 3},
         ///      {name: "SALES", numOfEmployees: 5},
         ///      ...
-        ///    ]
+        ///    
         /// 3. Wykorzystaj typy anonimowe
         /// </summary>
         public static IEnumerable<object> Task11()
         {
-            IEnumerable<object> result = null;
+            IEnumerable<object> result = Emps.Join(Depts, e => e.Deptno, d => d.Deptno, (e, d) => new
+            {
+                d.Dname,
+                e.Empno,
+            }).GroupBy(res => res.Dname).Select(res => new
+            {
+                name = res.Key,
+                numOfEmployees = res.Count()
+            });
+
             return result;
         }
+        
 
         /// <summary>
         /// Napisz własną metodę rozszerzeń, która pozwoli skompilować się poniższemu fragmentowi kodu.
@@ -283,8 +320,8 @@ namespace Exercise6
         /// </summary>
         public static IEnumerable<Emp> Task12()
         {
-            IEnumerable<Emp> result = null;
-            return result;
+            IEnumerable<Emp> result = Emps;
+            return result.GetEmpsWithEmployees();
         }
 
         /// <summary>
@@ -296,7 +333,9 @@ namespace Exercise6
         /// </summary>
         public static int Task13(int[] arr)
         {
-            int result = 0;
+            int result = arr.GroupBy(e => e).Where(e => e.Count() % 2 == 1)
+                .Select(e => e.Key)
+                .First();
             //result=
             return result;
         }
@@ -315,6 +354,11 @@ namespace Exercise6
 
     public static class CustomExtensionMethods
     {
-        //Put your extension methods here
+        public static IEnumerable<Emp> GetEmpsWithEmployees(this IEnumerable<Emp> emps)
+        {
+            return emps.Where(e => e.Mgr != null).Select(e => e.Mgr).Distinct().OrderBy(e => e.Ename)
+                .ThenByDescending(e => e.Salary);
+            
+        }
     }
 }
