@@ -346,8 +346,17 @@ namespace Exercise6
         /// </summary>
         public static IEnumerable<Dept> Task14()
         {
-            IEnumerable<Dept> result = null;
-            //result =
+            IEnumerable<Dept> result = Depts
+                .GroupJoin(Emps, d => d.Deptno, e => e.Deptno, (d, e) => new
+                {
+                    d,
+                    emps = e.Count()
+                })
+                .Where(joined => joined.emps is 5 or 0)
+                .Select(filtered => filtered.d)
+                .OrderBy(d => d.Dname);
+               
+
             return result;
         }
     }
@@ -357,7 +366,7 @@ namespace Exercise6
         public static IEnumerable<Emp> GetEmpsWithEmployees(this IEnumerable<Emp> emps)
         {
             return emps.Where(e => e.Mgr != null).Select(e => e.Mgr).Distinct().OrderBy(e => e.Ename)
-                .ThenByDescending(e => e.Salary);
+                .ThenByDescending(e => e?.Salary);
             
         }
     }
